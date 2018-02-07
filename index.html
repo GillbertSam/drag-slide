@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        #items {
+            width: 100%;
+            overflow: hidden;
+        }
+        #items li {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            line-height: 75px;
+            background-color: #ccc;
+            list-style: none;
+            opacity: .8;
+            /* transition:all  300ms; */
+        }
+        .delete { 
+            width: 50px;
+            display: none; 
+            position: absolute;
+            right: -50px;
+            height: 100%;
+            text-align: center;
+            background-color: darksalmon;
+        } 
+    </style>
+</head>
+<body>
+    <ul id="items">
+        <li data-id='1'>website 1 <span class="delete">删除</span></li>
+        <li data-id='2'>website 2<span class="delete">删除</span></li>
+        <li data-id='3'>website 3<span class="delete">删除</span></li>
+    </ul>
+</body>
+<script src="./zepto.js"></script>
+<script src="./touch.js"></script>
+<script src="./Sortable.js"></script>
+<script>
+    
+    var el = document.getElementById('items');
+    var lis = el.children;
+    var colorConfig = ['#e31820','#2dd','#ccc'];
+    var option = {
+    //group: "name",  // or { name: "...", pull: [true, false, clone], put: [true, false, array] }
+    sort: true,  // sorting inside list
+    delay: 300, // time in milliseconds to define when the sorting should start
+    disabled: false, // Disables the sortable if set to true.
+    store: null,  // @see Store
+    animation: 150,  // ms, animation speed moving items when sorting, `0` — without animation
+    //handle: ".my-handle",  // Drag handle selector within list items
+    filter: ".delete",  // Selectors that do not lead to dragging (String or Function)
+    //draggable: ".item",  // Specifies which items inside the element should be draggable
+    //ghostClass: "sortable-ghost",  // Class name for the drop placeholder
+    //chosenClass: "sortable-chosen",  // Class name for the chosen item
+    //dragClass: "sortable-drag",  // Class name for the dragging item
+    //dataIdAttr: 'data-id',
+
+    forceFallback: false,  // ignore the HTML5 DnD behaviour and force the fallback to kick in
+
+    //fallbackClass: "sortable-fallback",  // Class name for the cloned DOM Element when using forceFallback
+    fallbackOnBody: false,  // Appends the cloned DOM Element into the Document's Body
+    fallbackTolerance: 0, // Specify in pixels how far the mouse should move before it's considered as a drag.        
+
+    scroll: true, // or HTMLElement
+    scrollFn: function(offsetX, offsetY, originalEvent) {
+        // console.log(originalEvent.target.parentNode.offsetWidth)
+        // console.log(originalEvent)
+    }, // if you have custom scrollbar scrollFn may be used for autoscrolling
+    scrollSensitivity: 30, // px, how near the mouse must be to an edge to start scrolling.
+    scrollSpeed: 10, // px
+
+    setData: function (dataTransfer, dragEl) {
+        dataTransfer.setData('Text', dragEl.textContent); // `dataTransfer` object of HTML5 DragEvent
+    },
+
+    // Element is chosen
+    onChoose: function (evt) {
+        evt.oldIndex;  // element index within parent
+    },
+
+    // Element dragging started
+    onStart: function (evt) {
+        evt.oldIndex;  // element index within parent
+        
+        $('.delete').hide();
+    },
+
+    // Element dragging ended
+    onEnd: function (evt) {
+        evt.oldIndex;  // element's old index within parent
+        evt.newIndex;  // element's new index within parent
+    },
+
+    // Element is dropped into the list from another list
+    onAdd: function (evt) {
+        var itemEl = evt.item;  // dragged HTMLElement
+        evt.from;  // previous list
+        // + indexes from onEnd
+    },
+
+    // Changed sorting within list
+    onUpdate: function (evt) {
+        var itemEl = evt.item;  // dragged HTMLElement
+        // + indexes from onEnd
+        var lis = itemEl.parentNode.children;
+        var indexArr = [];
+        for(var i = 0;i < lis.length;i++) {
+            indexArr.push(lis[i].getAttribute('data-id'));
+        }
+        console.log(indexArr);
+    },
+
+    // Called by any change to the list (add / update / remove)
+    onSort: function (evt) {
+        // same properties as onUpdate
+    },
+
+    // Element is removed from the list into another list
+    onRemove: function (evt) {
+        // same properties as onUpdate
+    },
+
+    // Attempt to drag a filtered element
+    onFilter: function (evt) {
+        var itemEl = evt.item;  // HTMLElement receiving the `mousedown|tapstart` event.
+    },
+
+    // Event when you move an item in the list or between lists
+    onMove: function (evt, originalEvent) {
+        // Example: http://jsbin.com/tuyafe/1/edit?js,output
+        evt.dragged; // dragged HTMLElement
+        evt.draggedRect; // TextRectangle {left, top, right и bottom}
+        evt.related; // HTMLElement on which have guided
+        evt.relatedRect; // TextRectangle
+        originalEvent.clientY; // mouse position
+        // return false; — for cancel
+        // console.log(originalEvent.clientY)
+    },
+
+    // Called when creating a clone of element
+    onClone: function (evt) {
+        var origEl = evt.item;
+        var cloneEl = evt.clone;
+    }
+}
+    for(var i = 0;i < lis.length;i++) {
+        lis[i].style.backgroundColor = colorConfig[i];
+    }
+    var sortable = Sortable.create(el,option);
+
+
+    
+    $('#items li').on("swipeLeft",function(){//左滑显示隐藏按键
+        //  $(this).animate({left:'-3rem'},200,'linear')
+        // $(this).parent('li').siblings('li').find('.item').animate({left:'0'},200).siblings('.addit').animate({width:'0'},200);
+        
+        $('#items li').css('transform','translateX(0px)')
+        $(this)[0].style.transform = 'translateX(-50px)';
+        $('.delete').show();
+    }); 
+    $('#items li').on("swipeRight",function(){//右滑恢复 
+        $(this)[0].style.transform = 'translateX(0px)';
+        $('.delete').hide();
+    });
+    $('.delete').on("tap",function(){ //删除
+     $(this).parent().remove();
+    });
+
+    
+</script>
+</html>
